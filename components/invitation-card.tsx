@@ -13,10 +13,10 @@ export function InvitationCard({ guest }: { guest: GuestInvite }) {
 
       <div className="w-full max-w-lg sm:max-w-xl">
         <Image
-          src="/invitation.png"
+          src="/invitation.png?v=2"
           alt="Valima invitation for Danieal and Sidra — August 20, 2026 at Cherry Blossom Banquet Hall, Sterling, VA"
-          width={1080}
-          height={1620}
+          width={1429}
+          height={2000}
           priority
           className="h-auto w-full object-contain shadow-[0_30px_80px_-40px_rgba(0,0,0,0.35)]"
           sizes="(max-width: 640px) 100vw, 576px"
