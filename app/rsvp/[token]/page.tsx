@@ -68,7 +68,7 @@ export default async function RsvpPage({ params }: Props) {
           />
           <p className="font-serif text-lg text-foreground">Danieal &amp; Sidra</p>
           <p className="font-sans text-xs uppercase tracking-[0.3em] text-muted-foreground">
-            20 August 2026 &middot; Sterling, VA
+            08.20.2026 &middot; Sterling, VA
           </p>
         </footer>
       </section>

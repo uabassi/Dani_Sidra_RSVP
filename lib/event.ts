@@ -3,7 +3,7 @@
 export const EVENT = {
   title: 'Walima of Danieal & Sidra',
   description: 'Join us in celebrating the Walima of Danieal & Sidra.',
-  location: 'Cherry Blossom Banquet Hall, 466110 Lake Center Plaza, Sterling, VA 20165',
+  location: 'Cherry Blossom Banquet Hall, 46110 Lake Center Plaza, Sterling, VA 20165',
   /** Local start: Thu Aug 20, 2026 6:00 PM America/New_York */
   startLocal: '20260820T180000',
   /** Assume ~5 hour reception */
