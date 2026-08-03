@@ -90,6 +90,32 @@ export async function POST(request: Request) {
   })
 }
 
+export async function PATCH(request: Request) {
+  const unauthorized = await requireAdmin()
+  if (unauthorized) return unauthorized
+
+  const body = await request.json().catch(() => null)
+  const id = body?.id
+  if (typeof id !== 'string' || !id) {
+    return NextResponse.json({ error: 'Family id required' }, { status: 400 })
+  }
+  if (typeof body?.inviteSent !== 'boolean') {
+    return NextResponse.json({ error: 'inviteSent boolean required' }, { status: 400 })
+  }
+
+  const [updated] = await db
+    .update(families)
+    .set({ inviteSent: body.inviteSent })
+    .where(eq(families.id, id))
+    .returning()
+
+  if (!updated) {
+    return NextResponse.json({ error: 'Family not found' }, { status: 404 })
+  }
+
+  return NextResponse.json({ family: toFamilyRows([updated])[0] })
+}
+
 export async function DELETE(request: Request) {
   const unauthorized = await requireAdmin()
   if (unauthorized) return unauthorized

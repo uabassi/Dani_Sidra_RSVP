@@ -7,6 +7,7 @@ export type DashboardStats = {
   families: number
   pending: number
   responded: number
+  inviteSent: number
   invitedHeadcount: number
   attendingTotal: number
 }
@@ -23,6 +24,7 @@ export function AdminDashboard({ initialFamilies, initialStats }: Props) {
   const [importError, setImportError] = useState('')
   const [importing, setImporting] = useState(false)
   const [removingId, setRemovingId] = useState<string | null>(null)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
   const [copiedToken, setCopiedToken] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -76,6 +78,38 @@ export function AdminDashboard({ initialFamilies, initialStats }: Props) {
     } finally {
       setImporting(false)
       if (fileRef.current) fileRef.current.value = ''
+    }
+  }
+
+  async function handleInviteSent(id: string, inviteSent: boolean) {
+    const previous = families
+    const previousStats = stats
+    setFamilies((rows) =>
+      rows.map((f) => (f.id === id ? { ...f, inviteSent } : f)),
+    )
+    setStats((s) => ({
+      ...s,
+      inviteSent: s.inviteSent + (inviteSent ? 1 : -1),
+    }))
+    setTogglingId(id)
+    try {
+      const res = await fetch('/api/admin/families', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, inviteSent }),
+      })
+      if (!res.ok) {
+        setFamilies(previous)
+        setStats(previousStats)
+        const data = await res.json().catch(() => null)
+        alert(data?.error ?? 'Failed to update invite status')
+      }
+    } catch {
+      setFamilies(previous)
+      setStats(previousStats)
+      alert('Failed to update invite status')
+    } finally {
+      setTogglingId(null)
     }
   }
 
@@ -145,8 +179,9 @@ export function AdminDashboard({ initialFamilies, initialStats }: Props) {
           </div>
         </header>
 
-        <section className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <section className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           <StatCard label="Families" value={stats.families} />
+          <StatCard label="Invites sent" value={stats.inviteSent} />
           <StatCard label="Pending" value={stats.pending} highlight={stats.pending > 0} />
           <StatCard label="Responded" value={stats.responded} />
           <StatCard label="Invited (headcount)" value={stats.invitedHeadcount} />
@@ -188,11 +223,12 @@ export function AdminDashboard({ initialFamilies, initialStats }: Props) {
         </section>
 
         <section className="mt-10 overflow-x-auto rounded-[1.5rem] border border-border bg-card/80">
-          <table className="w-full min-w-[720px] border-collapse text-left">
+          <table className="w-full min-w-[800px] border-collapse text-left">
             <thead>
               <tr className="border-b border-border font-sans text-xs uppercase tracking-[0.15em] text-muted-foreground">
                 <th className="px-4 py-4 font-semibold sm:px-6">Family</th>
-                <th className="px-3 py-4 font-semibold">Invited</th>
+                <th className="px-3 py-4 text-center font-semibold">Invited</th>
+                <th className="px-3 py-4 font-semibold">Guests</th>
                 <th className="px-3 py-4 font-semibold">Status</th>
                 <th className="px-3 py-4 font-semibold">Attending</th>
                 <th className="px-3 py-4 font-semibold">#</th>
@@ -204,7 +240,7 @@ export function AdminDashboard({ initialFamilies, initialStats }: Props) {
               {families.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-6 py-12 text-center font-sans text-sm text-muted-foreground"
                   >
                     No families yet. Import a CSV to get started.
@@ -215,6 +251,18 @@ export function AdminDashboard({ initialFamilies, initialStats }: Props) {
                   <tr key={family.id} className="border-b border-border/70 last:border-0">
                     <td className="px-4 py-4 font-sans text-sm text-foreground sm:px-6">
                       {family.name}
+                    </td>
+                    <td className="px-3 py-4 text-center">
+                      <input
+                        type="checkbox"
+                        checked={family.inviteSent}
+                        disabled={togglingId === family.id}
+                        onChange={(e) =>
+                          void handleInviteSent(family.id, e.target.checked)
+                        }
+                        aria-label={`Mark ${family.name} as invited`}
+                        className="size-4 cursor-pointer accent-primary disabled:cursor-wait disabled:opacity-50"
+                      />
                     </td>
                     <td className="px-3 py-4 font-sans text-sm text-foreground">
                       {family.invitedCount}

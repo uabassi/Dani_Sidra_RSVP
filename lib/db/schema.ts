@@ -5,6 +5,8 @@ export const families = sqliteTable('families', {
   name: text('name').notNull(),
   nameNormalized: text('name_normalized').notNull().unique(),
   invitedCount: integer('invited_count').notNull(),
+  /** Manual admin tracking: whether this family has been invited */
+  inviteSent: integer('invite_sent', { mode: 'boolean' }).notNull().default(false),
   token: text('token').notNull().unique(),
   status: text('status', { enum: ['pending', 'responded'] })
     .notNull()

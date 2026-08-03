@@ -18,6 +18,7 @@ export function computeStats(rows: Family[]): DashboardStats {
     families: rows.length,
     pending: rows.filter((r) => r.status === 'pending').length,
     responded: rows.filter((r) => r.status === 'responded').length,
+    inviteSent: rows.filter((r) => r.inviteSent).length,
     invitedHeadcount: rows.reduce((sum, r) => sum + r.invitedCount, 0),
     attendingTotal: rows
       .filter((r) => r.attending === 'yes')
