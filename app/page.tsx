@@ -15,9 +15,13 @@ export default async function AdminPage() {
     return <AdminLogin />
   }
 
-  const rows = await db.select().from(families).orderBy(asc(families.name))
-
-  return (
-    <AdminDashboard initialFamilies={toFamilyRows(rows)} initialStats={computeStats(rows)} />
-  )
+  try {
+    const rows = await db.select().from(families).orderBy(asc(families.name))
+    return (
+      <AdminDashboard initialFamilies={toFamilyRows(rows)} initialStats={computeStats(rows)} />
+    )
+  } catch {
+    // Stale session + schema/DB hiccup should not hard-crash the page
+    return <AdminLogin />
+  }
 }

@@ -32,27 +32,31 @@ export function verifySessionToken(token: string | undefined | null): boolean {
   const [issuedAt, nonce, signature] = parts
   if (!issuedAt || !nonce || !signature) return false
 
-  const payload = `${issuedAt}.${nonce}`
-  const expected = sign(payload)
-
   try {
+    const payload = `${issuedAt}.${nonce}`
+    const expected = sign(payload)
     const a = Buffer.from(signature, 'utf8')
     const b = Buffer.from(expected, 'utf8')
     if (a.length !== b.length || !timingSafeEqual(a, b)) return false
+
+    const issued = Number(issuedAt)
+    if (!Number.isFinite(issued)) return false
+    if (Date.now() - issued > MAX_AGE_SECONDS * 1000) return false
+
+    return true
   } catch {
+    // Missing env / corrupt cookie must never crash the page
     return false
   }
-
-  const issued = Number(issuedAt)
-  if (!Number.isFinite(issued)) return false
-  if (Date.now() - issued > MAX_AGE_SECONDS * 1000) return false
-
-  return true
 }
 
 export async function isAdminAuthenticated(): Promise<boolean> {
-  const jar = await cookies()
-  return verifySessionToken(jar.get(SESSION_COOKIE)?.value)
+  try {
+    const jar = await cookies()
+    return verifySessionToken(jar.get(SESSION_COOKIE)?.value)
+  } catch {
+    return false
+  }
 }
 
 /** Returns a 401 response if the admin session cookie is missing/invalid. */
